@@ -1,0 +1,685 @@
+<?PHP
+error_reporting(0);
+session_start();
+include ("Seguridad.php");
+include("datosResidentes.php");
+ValidarNivel(4);
+?>	
+<!DOCTYPE html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" type="image/x-icon" href="images/PIT.ico" />
+	<link rel="stylesheet" href="assets/css/main.css" />
+	<title>Seguimiento solicitud de residencias</title>
+	<style type="text/css">
+		#botones{
+			text-align: center;
+		}
+		#verificarInfoFormRes{
+			margin-top: -300px;
+		}
+		#SolResTit{
+			text-align: center;
+			margin-top: 15px;
+		}
+	</style>
+
+<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/jquery.dropotron.min.js"></script>
+			<script src="assets/js/skel.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+
+    <link href="jquery-ui/jquery-ui.css" rel="stylesheet">
+	<script type="text/javascript" src="jquery-1.12.1.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="jquery-ui.css">
+	<script type="text/javascript" src="jquery-ui.js"></script>
+
+<script type="text/javascript">
+		
+		function cargarEstado(estado){			
+				var selectest=document.getElementById('estado');
+				for(var i=1;i<selectest.length;i++)
+				{
+					if(selectest.options[i].text==estado)
+					{
+						selectest.selectedIndex=i;
+					}
+				}
+		};
+
+		cargarEmpresas = function(empresa){
+
+
+			for(var i=0;i<empresa.length;i++){
+
+				var estado = empresa[i]["nombreestado"];
+				cargarEstado(estado);
+			
+				$("#Emp").val(empresa[i]["nombreempresa"]);
+
+				var giroramo = empresa[i]["giroramo"];
+
+				
+				switch(giroramo){
+					case "INDUSTRIAL":
+						document.getElementById("GRI").checked=true;
+					break;
+
+					case "SERVICIOS":
+						document.getElementById("GRS").checked=true;
+					break;
+
+					case "OTRO":
+						document.getElementById("GRO").checked=true;
+					break;
+				}
+			
+
+				var sector = empresa[i]["sector"];
+			
+				switch(sector){
+					case "PUBLICO":
+						document.getElementById("SPU").checked=true;
+					break;
+
+					case "PRIVADO":
+						document.getElementById("SPR").checked=true;
+					break;
+				}
+	
+				$("#mision").val(empresa[i]["mision"]);
+				$("#RFC").val(empresa[i]["rfc"]);
+				$("#address").val(empresa[i]["domicilio"]);
+				$("#cp").val(empresa[i]["cp"]);
+				$("#fax").val(empresa[i]["fax"]);
+				$("#tel").val(empresa[i]["telefono"]);
+				$("#colonia").val(empresa[i]["colonia"]);
+				$("#Mun").val(empresa[i]["municipio"]);
+				$("#NomTitEmp").val(empresa[i]["titularempresa"]);
+				$("#PuesNomTitEmp").val(empresa[i]["puestotitularempresa"]);
+				$("#TTE").val(empresa[i]["telefonoempleado"]);
+				$("#ETE").val(empresa[i]["emailempleado"]);
+
+			}	
+			rellenarCampo();	
+		};
+	
+		$(document).ready(function(){
+				var buscarempresa = $("#BusEmp");
+				buscarempresa.click(function(){
+					var empresa = $("#Emp").val();
+					var ajax = $.ajax({
+						data:{empresa},
+						url:"empresas.php",
+						type:"POST",
+						success: function(response){
+							if(response == "[]"){
+								alert("No se encuentra el registro");
+							}else{				
+								var empresa = JSON.parse(response);
+								cargarEmpresas(empresa);
+							}					
+						},
+						error: function(response,status,error){
+							alert(response+status+error);
+						}
+					});
+
+				});
+		});
+		
+
+	
+
+
+	$(document).ready(function() {
+ 
+ 		$('#LugarRes').autocomplete({
+			source: function(request, response){
+				$.ajax({
+					url:"lugarres.php", 
+					dataType:"json",
+					data:{lugarres:request.term},
+					success: function(data){
+						response(data);
+					}
+ 
+				});
+			},  
+		});
+ 
+		$('#NomProy').autocomplete({
+			source: function(request, response){
+				$.ajax({
+					url:"nomproy.php",
+					dataType:"json",
+					data:{nomproy:request.term},
+					success: function(data){
+						response(data);
+					}
+				});
+			},  
+		});
+ 
+ 
+		$('#PuesAseExt').autocomplete({
+			source: function(request, response){
+				$.ajax({
+					url:"puesaseext.php",
+					dataType:"json",
+					data:{puesaseext:request.term},
+					success: function(data){
+						response(data);
+					}
+ 
+				});
+			},  
+		});
+ 
+		$('#PuesNomTitEmp').autocomplete({
+			source: function(request, response){
+				$.ajax({
+					url:"puestitemp.php",
+					dataType:"json",
+					data:{puesnomtitemp:request.term},
+					success: function(data){
+						response(data);
+					}
+ 
+				});
+			},  
+		});
+
+		$('#Emp').autocomplete({
+			source: function(request, response){
+				$.ajax({
+					url:"emp.php",
+					dataType:"json",
+					data:{empresa:request.term},
+					success: function(data){
+						response(data);						
+					} 
+				});
+			},  
+		});
+ 
+		$('#NomTitEmp').autocomplete({
+			source: function(request, response){
+				$.ajax({
+					url:"titemp.php",
+					dataType:"json",
+					data:{titularempresa:request.term},
+					success: function(data){
+						response(data);
+					}
+ 
+				});
+			},  
+		});
+ 
+		$('#NomAseExt').autocomplete({
+			source: function(request, response){
+				$.ajax({
+					url:"aseext.php",
+					dataType:"json",
+					data:{asesorexterno:request.term},
+					success: function(data){
+						response(data);
+					}
+				});
+			},  
+		});
+
+		var mun = $("#Mun");
+
+		mun.autocomplete({
+			source: function(request, response){
+				$.ajax({
+					url:"municipio.php",
+					dataType:"json",
+					data:{municipio:request.term},
+					success: function(data){
+						response(data);
+					}
+				});
+			},  
+		});
+ 
+		mun.blur(function(){
+			rellenarCampo();
+		});
+
+		rellenarCampo = function(){
+			document.getElementById("LugRes").value=document.getElementById("Mun").value;
+		};
+ 	
+	});
+
+
+	function soloLetras(e){
+		key=e.keycode || e.which;
+		teclado=String.fromCharCode(key).toLowerCase();	
+		letras=" abcdefghijklmnñopqrstuvwxyz";
+		especiales="8-37-38-46-164";
+		teclado_especial=false;
+
+		for(var i in especiales){
+			if(key==especiales[i]){
+				teclado_especial=true;
+				break;
+			}
+		}
+
+		if(letras.indexOf(teclado)==-1 && !teclado_especial){
+			return false;
+		}
+	}
+
+	function caracteresespeciales(e) {
+	    tecla = (document.all) ? e.keyCode : e.which;
+	    //Tecla de retroceso para borrar, siempre la permite
+	    if (tecla == 8) {
+	        return true;
+	    }
+	    // Patron de entrada, en este caso solo acepta numeros y letras
+	    patron = /[a-z 0-9. -]/;
+	    tecla_final = String.fromCharCode(tecla);
+	    return patron.test(tecla_final);
+	}
+
+	function LetrasMayMin(e){
+		tecla = (document.all) ? e.keyCode : e.which;
+
+		if(tecla==8){
+			return true;
+		}
+
+		patron = /[a-z ]/;
+		tecla_final = String.fromCharCode(tecla);
+		return patron.test(tecla_final);
+	}
+
+	$(document).ready(function(){
+        var found = []; 
+        $("#estado option").each(function() { 
+            if($.inArray(this.value, found) != -1) $(this).remove(); 
+            found.push(this.value); 
+        }); 
+    });
+</script>
+</head>
+<body>
+	<?PHP	
+		$instanceName='Captura';
+		include ('MenuA.php');
+	?>
+	<?php
+	error_reporting(0);
+	$NuCo = $_SESSION['Usuario'];										
+  include("Connections/conexionResidencias.php");
+												$SQLFORRES= "SELECT numerocontrol from formatoresidencias where numerocontrol='$NuCo'";
+												$RESFORRES= $mysqli->query($SQLFORRES);
+												$tamFORRES=mysqli_num_rows($RESFORRES);
+
+												$SQLDATEMP= "SELECT numerocontrol from datosempresa where numerocontrol='$NuCo'";
+												$RESDATEMP= $mysqli->query($SQLDATEMP);
+												$tamDATEMP=mysqli_num_rows($RESDATEMP);
+
+												$SQLDATRES= "SELECT numerocontrol from datosresidente where numerocontrol='$NuCo'";
+												$RESDATRES= $mysqli->query($SQLDATRES);
+												$tamDATRES=mysqli_num_rows($RESDATRES);
+
+												$SQLDIR="SELECT NControl FROM direcciones WHERE NControl='$NuCo'";
+												$RESDIR=$mysqli->query($SQLDIR);
+												$TAMDIR=mysqli_num_rows($RESDIR);
+
+												mysqli_close($mysqli);
+	?>
+	<form name="Solicitud de Residencias" action="guardarSolicitudResidencias.php" method="GET">
+	<h3 id="SolResTit">Solicitud de residencias</h3>
+	<table>
+		<tr>
+			<td>Lugar
+			<input name="txtLugar" style="width: 920px;" value="<?php echo $Ciudad ?>" id="LugRes" readonly>
+		</tr>
+	</table>
+	<table>
+		<tr>
+			<td>Fecha
+			<input type="datetime" name="txtFecha" style="width: 200px" value="<?php echo date("Y-m-d");?>" readonly required>
+		</tr>
+	<table>
+		<tr>
+			<td>Nombre del proyecto
+			<input name="txtNomProy" value="<?php echo $NomProy ?>" style="width: 920px;" onKeyUp="this.value = this.value.toUpperCase();" id='NomProy' required>
+		</tr>
+	</table>
+	<table>
+		<tr>
+			<td style="width: 150px">Opcion elegida</td>			
+			<?php
+				if($OpEleg == "BANCO DE PROYECTOS"){
+					echo '<td style="width: 150px">Banco de proyectos';
+					echo '<input type="radio" name="proyecto"  value="BANCO DE PROYECTOS"  checked ></td>';
+				}else{
+					echo '<td style="width: 150px">Banco de proyectos';
+					echo '<input type="radio" name="proyecto"  value="BANCO DE PROYECTOS" required></td>';
+				}
+
+				if($OpEleg == "PROPUESTA PROPIA"){
+					echo '<td style="width: 150px">Propuesta Propia';
+					echo '<input type="radio" name="proyecto"  value="PROPUESTA PROPIA"  checked ></td>';
+				}else{
+					echo '<td style="width: 150px">Propuesta Propia';
+					echo '<input type="radio" name="proyecto"  value="PROPUESTA PROPIA" required></td>';
+				}
+
+				if($OpEleg == "TRABAJADOR"){
+					echo '<td style="width: 150px">Trabajador';
+					echo '<input type="radio" name="proyecto"  value="TRABAJADOR"  checked ></td>';
+				}else{
+					echo '<td style="width: 150px">Trabajador';
+					echo '<input type="radio" name="proyecto"  value="TRABAJADOR" required></td>';
+				}
+			?>			
+		</tr>
+	</table>
+		<tr>
+		<td>Periodo Proyectado</td>
+		<td><select name="txtPerProy" >
+		<?php 
+			if($PerProy!=""){
+				echo '<option>';
+				echo $PerProy;
+				echo '</option>';
+			}else{
+				echo '<option>';
+				echo $Per;
+				echo '</option>';
+			}
+		?>
+		</select></td>
+	
+		</tr>
+	</table>
+	<br><br>
+	<h3>Datos de la empresa</h3>		
+	<table>
+		<tr><td>Nombre
+			<input name="txtEmpresa" value="<?php echo $NomEmpRes ?>" onKeyUp="this.value = this.value.toUpperCase();" style="width: 900px;" id="Emp" onpaste="return false" onkeypress="return soloLetras(event)" required>
+			<input type="button" name="buscarempresa" value="Buscar Empresa" id="BusEmp"></td>
+		</tr>
+	</table>
+		
+	<table>
+		<tr><td>Giro, Ramo</td>
+			<?php
+	
+				if($GiroRamo=="INDUSTRIAL"){
+					echo '<td >Industrial
+					<input type="radio" name="girramemp" value="INDUSTRIAL" checked id="GRI"></td>';				
+				}else{
+					echo '<td >Industrial
+					<input type="radio" name="girramemp" value="INDUSTRIAL" id="GRI" required></td>';
+				}
+				if($GiroRamo=="SERVICIOS"){
+					echo '<td>Servicios
+					<input type="radio" name="girramemp" value="SERVICIOS" checked id="GRS"></td>';
+				}else{
+					echo '<td>Servicios
+					<input type="radio" name="girramemp" value="SERVICIOS" id="GRS" required></td>';
+				}
+				if($GiroRamo=="OTRO"){
+					echo '<td>Otro
+					<input type="radio" name="girramemp" value="OTRO" checked id="GRO"></td>';
+				}else{
+					echo '<td>Otro
+					<input type="radio" name="girramemp" value="OTRO" id="GRO" required></td>';
+				}
+			
+			?>
+			
+			<tr>
+				<td>Sector</td>
+			<?php
+			
+					if($Sector=="PUBLICO"){
+						echo '<td>Público
+						<input type="radio" name="secemp" value="PUBLICO" checked id="SPU"></td>';
+					}else{
+						echo '<td>Público
+						<input type="radio" name="secemp" value="PUBLICO" id="SPU" required></td>';
+					}
+					if($Sector=="PRIVADO"){
+						echo '<td>Privado
+						<input type="radio" name="secemp" value="PRIVADO" checked  id="SPR"></td>';
+					}else{
+						echo '<td>Privado
+						<input type="radio" name="secemp" value="PRIVADO" id="SPR" required></td>';
+					}
+				
+			
+			?>				
+				<td>R.F.C
+				<input name="txtRFC"  value="<?php  echo $RFC ?>" id="RFC" required></td>
+			</tr>
+		</tr>
+		</table>
+		<table>
+			<tr>
+				<td>Domicilio
+				<input id="address" name="txtDomEmp" style="width: 600px;" onKeyUp="this.value = this.value.toUpperCase();" value="<?php echo $Domicilio ?>" onpaste="return false" onkeypress="return caracteresespeciales(event)" required>
+				Colonia
+				<input name="txtColEmp" style="width: 400px;" onKeyUp="this.value = this.value.toUpperCase();"  value="<?php echo $ColDatEmp ?>" id="colonia" onkeypress="return caracteresespeciales(event)" required></td>
+			</tr>
+		</table>
+		<table>
+		<tr>			
+			<td>C.P
+			<input name="txtCPEmp"  value="<?php echo $CPDatEmp ?>"  id="cp" required></td>
+			<td>Fax
+			<input name="txtFaxEmp"  value="<?php  echo $Fax ?>" id="fax"></td>
+			<td>Estado
+				<select name="estados" id="estado">
+				<?PHP 
+					
+
+
+  include("Connections/conexionResidencias.php");
+				$sql= "SELECT * FROM `edos_mx`";
+				$Res=$mysqli->query($sql);
+				
+					if($ESTEMP!=""){
+						echo "<option selected>";
+						echo $ESTEMP;	
+						echo "</option>";
+						while ($fila = mysqli_fetch_assoc($Res)) {
+							$Estado=$fila['Nombre'];			
+							echo "<option>";
+								echo $Estado;
+							echo "</option>";				
+						} 
+					}else{
+						while ($fila = mysqli_fetch_assoc($Res)) {
+							$Estado=$fila['Nombre'];				
+							echo "<option value='$Estado'>";
+								echo $Estado;
+							echo "</option>";	
+						}
+					}
+				 
+				mysqli_close($mysqli);
+				?> 
+				</select>
+			</td>
+		</tr>
+		</table>
+		<table>
+		<tr>
+			Ciudad
+			<input name="txtCiuEmp" style="width: 300px;" onKeyUp="this.value = this.value.toUpperCase(); rellenarCampo();" value="<?php echo $Ciudad ?>"  id="Mun" onkeypress="return LetrasMayMin(event);" required>
+			Teléfono(no celular)
+			<input name="txtTelEmp"  value="<?php echo $Telefono ?>" id="tel" required></td>
+		</tr>
+		</table>
+		<table>
+		<tr>
+			<td>Misión de la Empresa</td>
+			<tr>
+				<?php
+					if($Mision!=""){
+						echo '<td><textarea rows=5 cols=60 name="txtMisEmp" id="mision" onKeyUp="this.value = this.value.toUpperCase();">';
+						echo $Mision;
+						echo '</textarea></td>';
+					}else{
+						echo '<td><textarea rows=5 cols=60 name="txtMisEmp"  onKeyUp="this.value = this.value.toUpperCase();" id="mision" required></textarea></td>';
+					}
+				
+				?>
+
+			</tr>
+		</tr>
+		</table>
+		<table>
+		<tr>
+			<td>Nombre del Titular de la empresa
+			<input name="txtNomTitEmp" style="width: 400px;"  id="NomTitEmp" value="<?php echo $NomTitEmp ?>" onKeyUp="this.value = this.value.toUpperCase();" required>
+			Puesto
+			<input name="txtPuesNomTitEmp" style="width: 500px;"  id="PuesNomTitEmp" value="<?php echo $PuestoNTE ?>" onKeyUp="this.value = this.value.toUpperCase();" required>
+			</td>
+		</tr>		
+		</table>
+		<table>
+			<tr>
+				<td>
+				Teléfono del Titular de la Empresa
+				<input name="txtTelTitEmp"  style="width: 150px" id="TTE" value="<?php echo $TELEMPLEADO ?>" required>
+				Email del Titular de la Empresa
+				<input name="txtEmailTitEmp" style="width: 300px;" id="ETE" value="<?php echo $EMAILEMPLEADO ?>" onKeyUp="this.value = this.value.toUpperCase();" required></td>
+			</tr>
+		</table>
+		<table>
+			<tr>
+			<td>Nombre del Asesor(a) Externo(a)
+			<input name="txtNomAseExt" style="width: 400px;" id="NomAseExt" value="<?php echo $NomAseExt ?>"  onKeyUp="this.value = this.value.toUpperCase();">
+			Puesto:
+			<input name="txtPuesNomAseExt" style="width: 500px;"  id="PuesAseExt" value="<?php echo $PuestoAE ?>"  onKeyUp="this.value = this.value.toUpperCase();"></td>
+		</tr>
+		</table>
+		<table>
+			<tr>
+				<td>
+				Teléfono del asesor externo con extensión
+				<input name="txtTelAseExt"  style="width: 150px"  value="<?php echo $TELASEEXT ?>">
+				Email del asesor externo
+				<input name="txtEmailAseExt" style="width: 300px;" value="<?php echo $EMAILASEEXT ?>" onKeyUp="this.value = this.value.toUpperCase();"></td>
+			</tr>
+		</table>
+		<table>
+			<tr>
+			<td>Nombre de la persona que firmará el acuerdo de trabajo.<br>
+			 Alumno(a)-Escuela-Empresa
+			<input name="txtNomPerAcTr" style="width: 400px;"  id="NomPerFir" value="<?php echo $NomPerFir ?>" onKeyUp="this.value = this.value.toUpperCase();" required>
+			Puesto:
+			<input name="txtPuesNomPerAcTr" style="width: 500px;"  id="PuesFirmAc" value="<?php echo $PuestoFA ?>" onKeyUp="this.value = this.value.toUpperCase();" required></td>
+		</tr>
+
+	</table>
+	<br>
+	<h3>Datos del/la Residente</h3>
+	<table>
+		<tr><td>Nombre
+			<input name="txtNomRes" value="<?php echo $N." ".$AP." ".$AM ?>" readonly style="width: 500px;" ></td></tr>
+	</table>
+	<table>
+			<tr>
+			<td>Carrera
+			<input name="txtCarr"  value="<?php echo $NomCar ?>" readonly style="width: 700px;"  ></td></tr>
+	</table>
+	<table>
+			
+			<td>No. de control
+			<input name="txtNC" value="<?php echo $NuCo ?>" readonly  >
+			
+			Domicilio
+			<input name="txtDomRes" value="<?php echo $Domi ?>" style="width: 500px;"  onKeyUp="this.value = this.value.toUpperCase();" required></td>
+			
+	</table>
+	<table>
+			
+				<td>Email
+				<input name="txtEmail" value="<?php echo $CORR ?>" style="width: 300px;" onKeyUp="this.value = this.value.toUpperCase();" required>
+				Para seguridad Social acudir:
+				<?php
+					if($SeguroSocial=="IMSS"){
+						echo 'IMSS
+							<input type="radio" name="segsoc" value="IMSS" checked>';
+					}else{
+						echo 'IMSS
+							<input type="radio" name="segsoc" value="IMSS" required>';
+					}
+					if($SeguroSocial=="ISSSTE"){
+						echo 'ISSSTE
+							<input type="radio" name="segsoc" value="ISSSTE" checked>';
+					}else{
+							echo 'ISSSTE
+							<input type="radio" name="segsoc" value="ISSSTE"  required>';
+					}
+					if($SeguroSocial=="OTROS"){
+						echo 'OTROS
+						<input type="radio" name="segsoc" value="OTROS" checked>';
+					}else{
+						echo 'OTROS
+						<input type="radio" name="segsoc" value="OTROS"  required>';
+					}
+				?>				
+				No.
+				<input name="txtNoSegSoc" value="<?php echo $NSS ?>" required></td>
+			
+	</table>
+	<table>
+				<td>
+				Ciudad
+				<input name="txtCiuRes" value="<?php echo $Muni ?>" style="width: 300px;"  onKeyUp="this.value = this.value.toUpperCase();" required>
+				Teléfono
+				<input name="txtTelRes" value="<?php echo $TELM ?>" required></td>
+	</table>
+
+		
+		</script>
+		
+		<br>
+		<div id="botones">
+		<?php							
+												
+											
+													if($tamFORRES>0 && $tamDATEMP>0 && $tamDATRES>0 && $TAMDIR>0){ 
+														echo '<input type="submit" value="Actualizar" onclick=this.form.action="guardarSolicitudResidencias.php" id="btnActualizar">&nbsp;&nbsp;&nbsp;';
+														echo '<input type="submit" value="Imprimir"  onclick=this.form.action="Residencias/examples/residencias.php" name="btnImprimir">';
+
+													}else{
+															echo '<b>Nota: </b>Debes completar el formulario y guardarlo para poder generar tu formato de impresión';
+															echo '<br>';
+															echo '<br>';
+														    echo '<input type="submit" value="Guardar">&nbsp;&nbsp;&nbsp;';
+
+													}
+												
+												
+										
+											
+		?>
+		
+	</div>
+	
+	</form>
+		<?PHP		  
+		include ('piedepagina.php');
+		?>		
+
+		
+</body>
+</html>
